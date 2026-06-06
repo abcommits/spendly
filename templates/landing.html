@@ -24,7 +24,7 @@
         </p>
         <div class="hero-actions">
             <a href="{{ url_for('register') }}" class="btn-dark">Create free account</a>
-            <a href="#" class="btn-dark">See how it works</a>
+            <a href="#" class="btn-dark" id="js-how-btn">See how it works</a>
         </div>
     </div>
 
@@ -98,4 +98,58 @@
     </div>
 </section>
 
+<div id="js-how-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-dialog">
+        <button class="modal-close" id="js-modal-close" aria-label="Close">&times;</button>
+        <div class="modal-video">
+            <iframe id="js-modal-iframe"
+                src=""
+                data-src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var btn    = document.getElementById('js-how-btn');
+    var modal  = document.getElementById('js-how-modal');
+    var iframe = document.getElementById('js-modal-iframe');
+    var close  = document.getElementById('js-modal-close');
+
+    function openModal() {
+        iframe.src = iframe.dataset.src;
+        modal.removeAttribute('aria-hidden');
+        modal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        iframe.src = '';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        openModal();
+    });
+
+    close.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+    });
+}());
+</script>
 {% endblock %}
