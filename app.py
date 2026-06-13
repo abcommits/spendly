@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for
-from database.db import init_db, seed_db, get_user_by_email, create_user
+from flask import Flask, render_template, request, redirect, url_for, session
+from database.db import init_db, seed_db, get_user_by_email, create_user, check_password
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-change-in-prod"
@@ -40,9 +40,23 @@ def register():
     return redirect(url_for("login"))
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if request.method == "GET":
+        return render_template("login.html")
+
+    email    = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
+
+    if not email or not password:
+        return render_template("login.html", error="All fields are required.")
+
+    user = check_password(email, password)
+    if not user:
+        return render_template("login.html", error="Invalid email or password.")
+
+    session["user_id"] = user["id"]
+    return redirect(url_for("profile"))
 
 
 # ------------------------------------------------------------------ #
