@@ -70,10 +70,10 @@ def create_user(name, email, password):
 def seed_db():
     conn = get_db()
 
-    conn.execute("""
-        INSERT OR IGNORE INTO users (name, email, password_hash)
-        VALUES ('Demo User', 'demo@spendly.app', 'demo')
-    """)
+    conn.execute(
+        "INSERT OR IGNORE INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+        ('Demo User', 'demo@spendly.app', generate_password_hash('demo123')),
+    )
     conn.commit()
 
     user = conn.execute("SELECT id FROM users WHERE email = 'demo@spendly.app'").fetchone()
