@@ -828,11 +828,17 @@ a { color: inherit; text-decoration: none; }
     white-space: nowrap;
 }
 
-.category-groceries  { background: var(--accent-light);   color: var(--accent); }
-.category-utilities  { background: var(--accent-2-light); color: var(--accent-2); }
-.category-dining     { background: var(--accent-2-light); color: var(--accent-2); }
-.category-transport  { background: var(--paper-warm);     color: var(--ink-muted); }
-.category-medical    { background: var(--danger-light);   color: var(--danger); }
+.category-groceries      { background: var(--accent-light);   color: var(--accent); }
+.category-utilities      { background: var(--accent-2-light); color: var(--accent-2); }
+.category-dining         { background: var(--accent-2-light); color: var(--accent-2); }
+.category-transport      { background: var(--paper-warm);     color: var(--ink-muted); }
+.category-medical        { background: var(--danger-light);   color: var(--danger); }
+.category-food           { background: var(--accent-light);   color: var(--accent); }
+.category-bills          { background: var(--accent-2-light); color: var(--accent-2); }
+.category-health         { background: var(--danger-light);   color: var(--danger); }
+.category-entertainment  { background: #ede9f8;               color: #5b4a9e; }
+.category-shopping       { background: #e3f0fb;               color: #2563a8; }
+.category-other          { background: var(--paper-warm);     color: var(--ink-muted); }
 
 /* Category breakdown */
 
@@ -848,7 +854,7 @@ a { color: inherit; text-decoration: none; }
 
 .breakdown-row {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 200px 1fr 36px;
     align-items: center;
     gap: 1rem;
 }
@@ -858,36 +864,44 @@ a { color: inherit; text-decoration: none; }
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
+    min-width: 0;
 }
 
 .breakdown-name {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .breakdown-amount {
     font-size: 0.82rem;
     color: var(--ink-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .breakdown-pct {
     font-size: 0.78rem;
     color: var(--ink-faint);
-    width: 36px;
     text-align: right;
-    flex-shrink: 0;
 }
-
-.breakdown-row .dash-track { min-width: 160px; }
 
 /* Category fill colours */
 
-.category-fill-utilities { background: var(--accent-2); }
-.category-fill-groceries { background: var(--accent); }
-.category-fill-dining    { background: var(--accent-2); }
-.category-fill-transport { background: var(--ink-muted); }
-.category-fill-medical   { background: var(--danger); }
+.category-fill-utilities     { background: var(--accent-2); }
+.category-fill-groceries     { background: var(--accent); }
+.category-fill-dining        { background: var(--accent-2); }
+.category-fill-transport     { background: var(--ink-muted); }
+.category-fill-medical       { background: var(--danger); }
+.category-fill-food          { background: var(--accent); }
+.category-fill-bills         { background: var(--accent-2); }
+.category-fill-health        { background: var(--danger); }
+.category-fill-entertainment { background: #5b4a9e; }
+.category-fill-shopping      { background: #2563a8; }
+.category-fill-other         { background: var(--ink-muted); }
 
 /* ------------------------------------------------------------------ */
 /* Responsive                                                          */
@@ -902,6 +916,6 @@ a { color: inherit; text-decoration: none; }
     .hero { padding: 3rem 1rem 2rem; }
     .hero-title { font-size: 2.4rem; }
     .dash-stats { grid-template-columns: 1fr; }
-    .breakdown-row { grid-template-columns: 1fr auto; }
+    .breakdown-row { grid-template-columns: 1fr 36px; }
     .breakdown-row .dash-track { display: none; }
 }
