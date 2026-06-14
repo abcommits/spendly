@@ -80,7 +80,37 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    user = {
+        "name": "Priya Sharma",
+        "email": "priya@example.com",
+        "member_since": "January 2026",
+        "initials": "PS",
+    }
+    stats = {
+        "total_spent": "₹8,900",
+        "transaction_count": 6,
+        "top_category": "Utilities",
+    }
+    expenses = [
+        {"date": "06 Jun 2026", "description": "Zepto quick delivery",    "category": "Groceries", "amount": "₹1,200"},
+        {"date": "05 Jun 2026", "description": "Pharmacy — paracetamol",  "category": "Medical",   "amount": "₹250"},
+        {"date": "04 Jun 2026", "description": "Dinner at Hao Ming",      "category": "Dining",    "amount": "₹780"},
+        {"date": "03 Jun 2026", "description": "Electricity bill — June", "category": "Utilities", "amount": "₹4,500"},
+        {"date": "02 Jun 2026", "description": "Ola ride to office",      "category": "Transport", "amount": "₹320"},
+        {"date": "01 Jun 2026", "description": "Big Bazaar weekly shop",  "category": "Groceries", "amount": "₹1,850"},
+    ]
+    categories = [
+        {"name": "Utilities", "amount": "₹4,500", "pct": 51},
+        {"name": "Groceries", "amount": "₹3,050", "pct": 34},
+        {"name": "Dining",    "amount": "₹780",   "pct": 9},
+        {"name": "Transport", "amount": "₹320",   "pct": 4},
+        {"name": "Medical",   "amount": "₹250",   "pct": 3},
+    ]
+    return render_template("profile.html", user=user, stats=stats,
+                           expenses=expenses, categories=categories)
 
 
 @app.route("/expenses/add")
