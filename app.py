@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from database.db import init_db, seed_db, get_user_by_email, create_user, check_password
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session, abort
+from database.db import (init_db, seed_db, get_user_by_email, create_user, check_password,
+                         get_user_by_id, get_expense_stats, get_expenses_by_user, get_category_breakdown)
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-change-in-prod"
@@ -75,7 +77,8 @@ def privacy():
 
 @app.route("/logout")
 def logout():
-    return "Logout — coming in Step 3"
+    session.clear()
+    return redirect(url_for("login"))
 
 
 @app.route("/profile")
@@ -83,32 +86,32 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
+    raw_user = get_user_by_id(session["user_id"])
+    if raw_user is None:
+        abort(404)
+
+    name_words = raw_user["name"].split()
+    initials = "".join(w[0].upper() for w in name_words if w)[:2]
+    created_dt = datetime.strptime(raw_user["created_at"][:10], "%Y-%m-%d")
+    member_since = created_dt.strftime("%B %Y")
+
     user = {
-        "name": "Priya Sharma",
-        "email": "priya@example.com",
-        "member_since": "January 2026",
-        "initials": "PS",
+        "name": raw_user["name"],
+        "email": raw_user["email"],
+        "member_since": member_since,
+        "initials": initials,
     }
+
+    raw_stats = get_expense_stats(session["user_id"])
     stats = {
-        "total_spent": "₹8,900",
-        "transaction_count": 6,
-        "top_category": "Utilities",
+        "total_spent": "₹{:,.0f}".format(raw_stats["total_spent"]),
+        "transaction_count": raw_stats["transaction_count"],
+        "top_category": raw_stats["top_category"] if raw_stats["top_category"] else "—",
     }
-    expenses = [
-        {"date": "06 Jun 2026", "description": "Zepto quick delivery",    "category": "Groceries", "amount": "₹1,200"},
-        {"date": "05 Jun 2026", "description": "Pharmacy — paracetamol",  "category": "Medical",   "amount": "₹250"},
-        {"date": "04 Jun 2026", "description": "Dinner at Hao Ming",      "category": "Dining",    "amount": "₹780"},
-        {"date": "03 Jun 2026", "description": "Electricity bill — June", "category": "Utilities", "amount": "₹4,500"},
-        {"date": "02 Jun 2026", "description": "Ola ride to office",      "category": "Transport", "amount": "₹320"},
-        {"date": "01 Jun 2026", "description": "Big Bazaar weekly shop",  "category": "Groceries", "amount": "₹1,850"},
-    ]
-    categories = [
-        {"name": "Utilities", "amount": "₹4,500", "pct": 51},
-        {"name": "Groceries", "amount": "₹3,050", "pct": 34},
-        {"name": "Dining",    "amount": "₹780",   "pct": 9},
-        {"name": "Transport", "amount": "₹320",   "pct": 4},
-        {"name": "Medical",   "amount": "₹250",   "pct": 3},
-    ]
+
+    expenses = get_expenses_by_user(session["user_id"])
+
+    categories = get_category_breakdown(session["user_id"])
     return render_template("profile.html", user=user, stats=stats,
                            expenses=expenses, categories=categories)
 

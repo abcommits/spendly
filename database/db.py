@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 DATABASE = os.path.join(os.path.dirname(__file__), "spendly.db")
@@ -94,3 +95,81 @@ def seed_db():
 
     conn.commit()
     conn.close()
+
+
+def get_user_by_id(user_id):
+    conn = get_db()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    conn.close()
+    return user
+
+
+def get_expense_stats(user_id):
+    conn = get_db()
+
+    row = conn.execute(
+        "SELECT COALESCE(SUM(amount), 0) AS total_spent, COUNT(*) AS transaction_count "
+        "FROM expenses WHERE user_id = ?",
+        (user_id,),
+    ).fetchone()
+
+    top = conn.execute(
+        "SELECT category FROM expenses WHERE user_id = ? "
+        "GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
+        (user_id,),
+    ).fetchone()
+
+    conn.close()
+
+    return {
+        "total_spent": float(row["total_spent"]),
+        "transaction_count": int(row["transaction_count"]),
+        "top_category": top["category"] if top else None,
+    }
+
+
+def get_expenses_by_user(user_id):
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC",
+        (user_id,),
+    ).fetchall()
+    conn.close()
+
+    expenses = []
+    for row in rows:
+        raw_date = datetime.strptime(row["date"], "%Y-%m-%d")
+        expenses.append({
+            "date": raw_date.strftime("%d %b %Y"),
+            "description": row["description"],
+            "category": row["category"],
+            "amount": "₹{:,}".format(int(row["amount"])),
+        })
+    return expenses
+
+
+def get_category_breakdown(user_id):
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT category, SUM(amount) AS total FROM expenses"
+        " WHERE user_id = ? GROUP BY category ORDER BY total DESC",
+        (user_id,),
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return []
+
+    total_all = sum(row["total"] for row in rows)
+
+    result = []
+    for row in rows:
+        cat_total = row["total"]
+        pct = round(cat_total / total_all * 100) if total_all > 0 else 0
+        result.append({
+            "name": row["category"],
+            "amount": "₹{:,}".format(int(cat_total)),
+            "pct": pct,
+        })
+
+    return result
