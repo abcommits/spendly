@@ -919,3 +919,60 @@ a { color: inherit; text-decoration: none; }
     .breakdown-row { grid-template-columns: 1fr 36px; }
     .breakdown-row .dash-track { display: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Filter bar (profile page)                                           */
+/* ------------------------------------------------------------------ */
+
+.filter-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filter-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-preset {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+
+.filter-preset--active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.filter-custom {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-custom .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 140px;
+}
+
+.filter-clear {
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+    color: var(--ink-muted);
+    align-self: flex-start;
+}
+
+.expense-empty,
+.breakdown-empty {
+    font-size: 0.9rem;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 2rem 1rem;
+    margin: 0;
+}

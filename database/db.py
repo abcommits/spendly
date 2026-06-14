@@ -97,6 +97,18 @@ def seed_db():
     conn.close()
 
 
+def _date_clause(start, end):
+    clauses, params = [], []
+    if start:
+        clauses.append("date >= ?")
+        params.append(start)
+    if end:
+        clauses.append("date <= ?")
+        params.append(end)
+    fragment = (" AND " + " AND ".join(clauses)) if clauses else ""
+    return fragment, tuple(params)
+
+
 def get_user_by_id(user_id):
     conn = get_db()
     user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
@@ -104,19 +116,20 @@ def get_user_by_id(user_id):
     return user
 
 
-def get_expense_stats(user_id):
+def get_expense_stats(user_id, start=None, end=None):
     conn = get_db()
+    date_frag, date_params = _date_clause(start, end)
 
     row = conn.execute(
         "SELECT COALESCE(SUM(amount), 0) AS total_spent, COUNT(*) AS transaction_count "
-        "FROM expenses WHERE user_id = ?",
-        (user_id,),
+        "FROM expenses WHERE user_id = ?" + date_frag,
+        (user_id,) + date_params,
     ).fetchone()
 
     top = conn.execute(
-        "SELECT category FROM expenses WHERE user_id = ? "
-        "GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
-        (user_id,),
+        "SELECT category FROM expenses WHERE user_id = ?" + date_frag +
+        " GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
+        (user_id,) + date_params,
     ).fetchone()
 
     conn.close()
@@ -128,11 +141,12 @@ def get_expense_stats(user_id):
     }
 
 
-def get_expenses_by_user(user_id):
+def get_expenses_by_user(user_id, start=None, end=None):
     conn = get_db()
+    date_frag, date_params = _date_clause(start, end)
     rows = conn.execute(
-        "SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC",
-        (user_id,),
+        "SELECT * FROM expenses WHERE user_id = ?" + date_frag + " ORDER BY date DESC",
+        (user_id,) + date_params,
     ).fetchall()
     conn.close()
 
@@ -148,12 +162,13 @@ def get_expenses_by_user(user_id):
     return expenses
 
 
-def get_category_breakdown(user_id):
+def get_category_breakdown(user_id, start=None, end=None):
     conn = get_db()
+    date_frag, date_params = _date_clause(start, end)
     rows = conn.execute(
         "SELECT category, SUM(amount) AS total FROM expenses"
-        " WHERE user_id = ? GROUP BY category ORDER BY total DESC",
-        (user_id,),
+        " WHERE user_id = ?" + date_frag + " GROUP BY category ORDER BY total DESC",
+        (user_id,) + date_params,
     ).fetchall()
     conn.close()
 

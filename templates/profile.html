@@ -34,6 +34,49 @@
             </div>
         </section>
 
+        <!-- Date filter -->
+        <section class="profile-section">
+            <h2 class="profile-section-title">Filter Transactions</h2>
+            <div class="filter-bar-wrapper">
+
+                <div class="filter-presets">
+                    {% set presets = [
+                        ("this_month", "This month"),
+                        ("last_30",    "Last 30 days"),
+                        ("last_90",    "Last 90 days"),
+                        ("this_year",  "This year"),
+                    ] %}
+                    {% for value, label in presets %}
+                    <form method="GET" action="{{ url_for('profile') }}" style="display:inline">
+                        <button type="submit" name="period" value="{{ value }}"
+                                class="btn-ghost filter-preset{% if active_filter.period == value %} filter-preset--active{% endif %}">
+                            {{ label }}
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
+
+                <form class="filter-custom" method="GET" action="{{ url_for('profile') }}">
+                    <div class="form-group">
+                        <label for="filter-start">From</label>
+                        <input type="date" id="filter-start" name="start"
+                               class="form-input" value="{{ active_filter.start }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-end">To</label>
+                        <input type="date" id="filter-end" name="end"
+                               class="form-input" value="{{ active_filter.end }}">
+                    </div>
+                    <button type="submit" class="btn-primary">Apply</button>
+                </form>
+
+                {% if active_filter.is_active %}
+                <a href="{{ url_for('profile') }}" class="btn-ghost filter-clear">Clear filter</a>
+                {% endif %}
+
+            </div>
+        </section>
+
         <!-- Transaction history -->
         <section class="profile-section">
             <h2 class="profile-section-title">Recent Transactions</h2>
@@ -48,18 +91,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for e in expenses %}
+                        {% if expenses %}
+                            {% for e in expenses %}
+                            <tr>
+                                <td class="expense-date">{{ e.date }}</td>
+                                <td>{{ e.description }}</td>
+                                <td>
+                                    <span class="category-badge category-{{ e.category | lower }}">
+                                        {{ e.category }}
+                                    </span>
+                                </td>
+                                <td class="expense-amount">{{ e.amount }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
                         <tr>
-                            <td class="expense-date">{{ e.date }}</td>
-                            <td>{{ e.description }}</td>
-                            <td>
-                                <span class="category-badge category-{{ e.category | lower }}">
-                                    {{ e.category }}
-                                </span>
-                            </td>
-                            <td class="expense-amount">{{ e.amount }}</td>
+                            <td colspan="4" class="expense-empty">No transactions found for this period.</td>
                         </tr>
-                        {% endfor %}
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
@@ -69,18 +118,22 @@
         <section class="profile-section">
             <h2 class="profile-section-title">Spending by Category</h2>
             <div class="category-breakdown">
-                {% for cat in categories %}
-                <div class="breakdown-row">
-                    <div class="breakdown-meta">
-                        <span class="breakdown-name">{{ cat.name }}</span>
-                        <span class="breakdown-amount">{{ cat.amount }}</span>
+                {% if categories %}
+                    {% for cat in categories %}
+                    <div class="breakdown-row">
+                        <div class="breakdown-meta">
+                            <span class="breakdown-name">{{ cat.name }}</span>
+                            <span class="breakdown-amount">{{ cat.amount }}</span>
+                        </div>
+                        <div class="dash-track">
+                            <div class="dash-fill category-fill-{{ cat.name | lower }}" style="width: {{ cat.pct }}%"></div>
+                        </div>
+                        <span class="breakdown-pct">{{ cat.pct }}%</span>
                     </div>
-                    <div class="dash-track">
-                        <div class="dash-fill category-fill-{{ cat.name | lower }}" style="width: {{ cat.pct }}%"></div>
-                    </div>
-                    <span class="breakdown-pct">{{ cat.pct }}%</span>
-                </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                <p class="breakdown-empty">No spending data for this period.</p>
+                {% endif %}
             </div>
         </section>
 
